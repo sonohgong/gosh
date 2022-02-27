@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+for cmd in cmd/*; do
+        name=$(basename $cmd)
+        src="$cmd/main.go"
+        go build -o $name $* $src
+done

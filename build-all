@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+declare -A ext
+ext[windows]='.exe'
+ext[linux]=''
+ext[darwin]=''
+
+GOARCH=amd64
+for GOOS in linux windows darwin; do
+        for cmd in cmd/*; do
+                src="$cmd/main.go"
+                name=$(basename $cmd)
+
+                echo -n "building $name for $GOOS-$GOARCH..."
+                CGO_ENABLED=0 GOOS=${GOOS} GOARCH=${GOARCH} go build -o $name-$GOOS-$GOARCH${ext[$GOOS]} $src
+                echo "done"
+        done
+done
