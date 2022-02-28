@@ -9,7 +9,7 @@ import (
 	"runtime/pprof"
 	"time"
 
-	"github.com/sonohgong/gosh/pkg/gosh"
+	"github.com/sonohgong/gosh/pkg/gosh2"
 )
 
 func handler(data interface{}) error {
@@ -19,15 +19,16 @@ func handler(data interface{}) error {
 }
 
 func main() {
-	taskManager := gosh.NewTaskManager(handler)
+	taskManager := gosh2.NewTaskManager(handler)
 	taskManager.NewTasks(100000)
 
-	scheduler := gosh.NewScheduler(10*time.Millisecond, taskManager.StartTasks)
-	scheduler.Run()
+	scheduler := gosh2.NewScheduler(10*time.Millisecond, taskManager.StartTasks)
+	scheduler.Start()
 
 	taskManager.Wait()
-	scheduler.Done()
+	fmt.Println("task manager done!")
 
+	scheduler.Stop()
 	fmt.Println("done!")
 
 	f, err := os.Create("memprof")

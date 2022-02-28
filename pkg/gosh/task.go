@@ -33,6 +33,7 @@ type taskManager struct {
 	handler       func(data interface{}) error
 	concurrent    int64
 	maxConcurrent uint64
+	done          chan bool
 }
 
 func NewTaskManager(handler func(data interface{}) error) taskManager {
@@ -41,6 +42,7 @@ func NewTaskManager(handler func(data interface{}) error) taskManager {
 		tasks:         sync.Map{},
 		handler:       handler,
 		maxConcurrent: 1000,
+		done:          make(chan bool),
 	}
 }
 
@@ -69,6 +71,10 @@ func (self *taskManager) StartTasks() {
 	self.lock.Lock()
 	defer self.lock.Unlock()
 
+	if len(self.ready) == 0 {
+		self.done <- true
+	}
+
 	free := int64(self.maxConcurrent) - atomic.LoadInt64(&self.concurrent)
 	for taskID := range self.ready {
 		if free <= 0 {
@@ -96,4 +102,8 @@ func (self *taskManager) handleTask(id TaskID) {
 		task.status = Success
 	}
 	atomic.AddInt64(&self.concurrent, -1)
+}
+
+func (self *taskManager) Wait() {
+	<-self.done
 }
